@@ -1,0 +1,14 @@
+[project]
+name = "spyglass"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Gerardo Salazar", email = "gfsalazar01@gmail.com" }
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
