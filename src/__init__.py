@@ -1,6 +1,4 @@
-from .spyglass_trace import spyglass_trace
+from .trace import spyglass_trace
+from .openai import spyglass_openai
 
-def hello() -> str:
-    return "Hello from spyglass!"
-
-__all__ = ["spyglass_trace", "hello"]
+__all__ = ["spyglass_trace", "spyglass_openai"]

@@ -2,7 +2,7 @@ import functools
 from typing import Any, Callable, Optional, Dict, Union
 from opentelemetry.trace import Span, Status, StatusCode
 import inspect
-from otel import spyglass_tracer
+from .otel import spyglass_tracer
 
 def spyglass_trace(name: Optional[str] = None) -> Callable:
     """
@@ -108,7 +108,9 @@ def _serialize_attribute_value(value: Any) -> Union[str, int, float, bool]:
     Serialize a value to be suitable for span attributes.
     OpenTelemetry attributes must be basic types.
     """
-    if isinstance(value, (str, int, float, bool)):
+    if isinstance(value, str):
+        return value[:1000]  # Limit string length to avoid huge attributes
+    elif isinstance(value, (int, float, bool)):
         return value
     elif value is None:
         return "None"
