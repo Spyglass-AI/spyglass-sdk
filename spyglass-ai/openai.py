@@ -3,6 +3,9 @@ from .otel import spyglass_tracer
 from opentelemetry.trace import Status, StatusCode
 
 # TODO: Implement wrappers the different client types (sync, async, streaming)
+# TODO: Add metrics to track
+#   - Number of calls to each type of endpoint
+#   - Number of errors
 
 def spyglass_openai(client_instance):
     """

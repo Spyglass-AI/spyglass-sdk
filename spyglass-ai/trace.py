@@ -35,7 +35,7 @@ def spyglass_trace(name: Optional[str] = None) -> Callable:
             # Generate span name
             span_name = name or f"{func.__module__}.{func.__qualname__}"
             
-            # Use global tracer - no need to create new instance each time
+            # Use global tracer, no need to create new instance each time
             with spyglass_tracer.start_as_current_span(span_name) as span:
                 try:
                     # Set base attributes
