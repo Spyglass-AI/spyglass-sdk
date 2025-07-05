@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from opentelemetry.trace import Status, StatusCode
 
-from src.openai import spyglass_openai
+from spyglass_ai.openai import spyglass_openai
 
 class MockOpenAIResponse:
     """Mock OpenAI API response object."""
@@ -27,7 +27,7 @@ class MockOpenAIClient:
 class TestSpyglassOpenAI:
     """Test the spyglass_openai wrapper function."""
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_basic_wrapping(self, mock_tracer):
         """Test that the client is properly wrapped."""
         mock_span = MagicMock()
@@ -45,7 +45,7 @@ class TestSpyglassOpenAI:
         # The create method should be replaced
         assert client.chat.completions.create != original_create
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_span_creation(self, mock_tracer):
         """Test that spans are created with correct names."""
         mock_span = MagicMock()
@@ -66,7 +66,7 @@ class TestSpyglassOpenAI:
         # Check span was created with correct name
         mock_tracer.start_as_current_span.assert_called_once_with("openai.chat.completions.create")
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_request_attributes(self, mock_tracer):
         """Test that request attributes are properly captured."""
         mock_span = MagicMock()
@@ -100,7 +100,7 @@ class TestSpyglassOpenAI:
         for expected_call in expected_calls:
             mock_span.set_attribute.assert_any_call(*expected_call)
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_response_attributes(self, mock_tracer):
         """Test that response attributes are properly captured."""
         mock_span = MagicMock()
@@ -132,7 +132,7 @@ class TestSpyglassOpenAI:
         for expected_call in expected_calls:
             mock_span.set_attribute.assert_any_call(*expected_call)
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_exception_handling(self, mock_tracer):
         """Test exception handling in the wrapper."""
         mock_span = MagicMock()
@@ -161,7 +161,7 @@ class TestSpyglassOpenAI:
         assert call_args.status_code == StatusCode.ERROR
         assert call_args.description == "API Error"
     
-    @patch('src.openai.spyglass_tracer')
+    @patch('spyglass_ai.openai.spyglass_tracer')
     def test_return_value(self, mock_tracer):
         """Test that the original return value is preserved."""
         mock_span = MagicMock()

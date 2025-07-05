@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, MagicMock
 import functools
 from opentelemetry.trace import Status, StatusCode
 
-from src.trace import (
+from spyglass_ai.trace import (
     spyglass_trace, 
     _set_base_attributes, 
     _capture_arguments, 
@@ -14,7 +14,7 @@ from src.trace import (
 class TestSpyglassTrace:
     """Test the spyglass_trace decorator."""
     
-    @patch('src.trace.spyglass_tracer')
+    @patch('spyglass_ai.trace.spyglass_tracer')
     def test_basic_function_tracing(self, mock_tracer):
         """Test basic function tracing with default name."""
         mock_span = MagicMock()
@@ -34,7 +34,7 @@ class TestSpyglassTrace:
         # Check that result is correct
         assert result == 3
     
-    @patch('src.trace.spyglass_tracer')
+    @patch('spyglass_ai.trace.spyglass_tracer')
     def test_custom_span_name(self, mock_tracer):
         """Test custom span name."""
         mock_span = MagicMock()
@@ -49,7 +49,7 @@ class TestSpyglassTrace:
         
         mock_tracer.start_as_current_span.assert_called_once_with("test_function")
     
-    @patch('src.trace.spyglass_tracer')
+    @patch('spyglass_ai.trace.spyglass_tracer')
     def test_exception_handling(self, mock_tracer):
         """Test that exceptions are properly recorded and re-raised."""
         mock_span = MagicMock()
@@ -70,7 +70,7 @@ class TestSpyglassTrace:
         assert call_args.status_code == StatusCode.ERROR
         assert call_args.description == "Test error"
     
-    @patch('src.trace.spyglass_tracer')
+    @patch('spyglass_ai.trace.spyglass_tracer')
     def test_success_status(self, mock_tracer):
         """Test that successful execution sets OK status."""
         mock_span = MagicMock()
@@ -214,7 +214,7 @@ class TestIntegration:
     
     def test_real_tracing_integration(self):
         """Test the decorator with real OpenTelemetry setup."""
-        from src.otel import spyglass_tracer
+        from spyglass_ai.otel import spyglass_tracer
         
         @spyglass_trace(name="integration_test")
         def test_function(x, y=10):

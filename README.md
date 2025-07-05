@@ -13,7 +13,7 @@ pip install spyglass-ai
 Use the `@spyglass_trace` decorator to automatically trace function calls:
 
 ```python
-from spyglass import spyglass_trace
+from spyglass_ai import spyglass_trace
 
 @spyglass_trace()
 def calculate_total(price, tax_rate):
@@ -38,7 +38,7 @@ Wrap your OpenAI client to automatically trace API calls:
 
 ```python
 from openai import OpenAI
-from spyglass import spyglass_openai
+from spyglass_ai import spyglass_openai
 
 # Create your OpenAI client
 client = OpenAI(api_key="your-api-key")
@@ -58,7 +58,7 @@ response = client.chat.completions.create(
 
 ```python
 from openai import OpenAI
-from spyglass import spyglass_trace, spyglass_openai
+from spyglass_ai import spyglass_trace, spyglass_openai
 
 # Set up OpenAI client with tracing
 client = OpenAI(api_key="your-api-key")

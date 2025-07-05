@@ -26,6 +26,7 @@ def spyglass_openai(client_instance):
         with spyglass_tracer.start_as_current_span("openai.chat.completions.create") as span:
             try:
                 # Set attributes for the OpenAI call
+                # TODO: Double check these attributes
                 if "model" in kwargs:
                     span.set_attribute("openai.model", kwargs["model"])
                 if "messages" in kwargs:
@@ -47,6 +48,7 @@ def spyglass_openai(client_instance):
                     if hasattr(result.usage, 'total_tokens'):
                         span.set_attribute("openai.usage.total_tokens", result.usage.total_tokens)
                 
+                # Get the model response and save it as an attribute
                 if hasattr(result, 'model'):
                     span.set_attribute("openai.response.model", result.model)
                 
