@@ -52,6 +52,9 @@ def spyglass_openai(client_instance):
                 if hasattr(result, 'model'):
                     span.set_attribute("openai.response.model", result.model)
                 
+                # Set span status to OK for successful calls
+                span.set_status(Status(StatusCode.OK))
+                
                 return result
                 
             except Exception as e:

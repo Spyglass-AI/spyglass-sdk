@@ -6,6 +6,26 @@ The Spyglass SDK provides client code for shipping telemetry data to the Spyglas
 pip install spyglass-ai
 ```
 
+## Configuration
+
+Set the following environment variables to configure the SDK:
+
+### Required
+- `SPYGLASS_API_KEY`: Your Spyglass API key
+- `SPYGLASS_DEPLOYMENT_ID`: Unique identifier for your deployment
+  - **Note**: Used for both `service.name` and `deployment.id` attributes
+
+### Optional
+- `SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT`: Custom endpoint for development
+
+### Example Configuration
+```bash
+export SPYGLASS_API_KEY="your-api-key"
+export SPYGLASS_DEPLOYMENT_ID="user-service-v1.2.0"  # Required - used for both service.name and deployment.id
+```
+
+**Note**: `SPYGLASS_DEPLOYMENT_ID` is required and will be used for both the OpenTelemetry `service.name` and `deployment.id` resource attributes. This ensures consistency and simplifies dashboard queries.
+
 ## Usage
 
 ### Basic Function Tracing
