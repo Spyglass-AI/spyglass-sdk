@@ -1,3 +1,4 @@
+import os
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 import functools
@@ -212,6 +213,10 @@ class TestSerializeAttributeValue:
 class TestIntegration:
     """Integration tests with real OpenTelemetry components."""
     
+    @patch.dict(os.environ, {
+        "SPYGLASS_DEPLOYMENT_ID": "test-deployment",
+        "SPYGLASS_API_KEY": "test-api-key"
+    })
     def test_real_tracing_integration(self):
         """Test the decorator with real OpenTelemetry setup."""
         from spyglass_ai.otel import spyglass_tracer
@@ -224,6 +229,10 @@ class TestIntegration:
         result = test_function(5, y=3)
         assert result == 15
     
+    @patch.dict(os.environ, {
+        "SPYGLASS_DEPLOYMENT_ID": "test-deployment",
+        "SPYGLASS_API_KEY": "test-api-key"
+    })
     def test_class_method_tracing(self):
         """Test tracing class methods."""
         class TestClass:

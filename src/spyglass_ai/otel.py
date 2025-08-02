@@ -1,9 +1,9 @@
 import os
-import grpc
+import sys
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 
 class SpyglassOtelError(Exception):
@@ -35,30 +35,23 @@ def _create_resource():
 
 
 def _create_exporter():
-    """Create and return an OTLP gRPC span exporter based on environment variables."""
+    """Create and return an OTLP HTTP span exporter based on environment variables."""
     api_key = os.getenv("SPYGLASS_API_KEY")
     
     # Check for custom endpoint (for development)
-    endpoint = os.getenv("SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT", "https://ingest.spyglass-ai.com:443")
+    endpoint = os.getenv("SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT", "https://ingest.spyglass-ai.com/v1/traces")
     
     kwargs = {}
     kwargs["endpoint"] = endpoint
-    kwargs["compression"] = grpc.Compression.Gzip
-    
-    # Determine if connection should be insecure based on endpoint
-    if endpoint.startswith("http://") or ":4317" in endpoint:
-        kwargs["insecure"] = True
-    else:
-        kwargs["insecure"] = False
     
     if not api_key:
         raise ExporterConfigurationError("SPYGLASS_API_KEY is not set")
     
     # Set Authorization header with Bearer token
-    # gRPC metadata keys must be lowercase
-    kwargs["headers"] = {"authorization": f"Bearer {api_key}"}
+    kwargs["headers"] = {"Authorization": f"Bearer {api_key}"}
     
-    return OTLPSpanExporter(**kwargs)
+    exporter = OTLPSpanExporter(**kwargs)
+    return exporter
 
 # Create the tracer provider with resource attributes
 resource = _create_resource()

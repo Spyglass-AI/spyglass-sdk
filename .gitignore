@@ -3,3 +3,4 @@ NOTES.md
 __pycache__
 .pytest_cache/
 .env
+.coverage

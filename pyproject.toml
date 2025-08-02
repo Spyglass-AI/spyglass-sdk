@@ -6,23 +6,59 @@ readme = "README.md"
 authors = [
     { name = "Spyglass AI Team", email = "team@spyglass-ai.com" }
 ]
+license = "MIT"
+keywords = [
+    "opentelemetry",
+    "observability", 
+    "tracing",
+    "monitoring",
+    "ai",
+    "llm",
+    "openai"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Logging",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
 requires-python = ">=3.9"
 dependencies = [
     "opentelemetry-api>=1.33.1",
-    "opentelemetry-exporter-otlp-proto-grpc>=1.33.1",
+    "opentelemetry-exporter-otlp-proto-http>=1.33.1",
     "opentelemetry-sdk>=1.33.1",
 ]
+
+[project.urls]
+"Homepage" = "https://spyglass-ai.com"
+"Repository" = "https://github.com/spyglass-ai/spyglass-sdk"
+"Bug Reports" = "https://github.com/spyglass-ai/spyglass-sdk/issues"
+"Documentation" = "https://docs.spyglass-ai.com"
+"Source Code" = "https://github.com/spyglass-ai/spyglass-sdk"
+"Changelog" = "https://github.com/spyglass-ai/spyglass-sdk/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
+    "pytest-env>=1.1.0",
 ]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0", 
     "pytest-mock>=3.10.0",
+    "pytest-env>=1.1.0",
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
@@ -45,6 +81,10 @@ addopts = [
     "--tb=short",
     "--strict-markers",
 ]
+env = [
+    "SPYGLASS_DEPLOYMENT_ID=test-deployment",
+    "SPYGLASS_API_KEY=test-api-key",
+]
 
 [tool.coverage.run]
 source = ["src"]
@@ -63,4 +103,9 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[dependency-groups]
+test = [
+    "pytest-env>=1.1.5",
+]
 
