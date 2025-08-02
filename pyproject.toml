@@ -105,6 +105,9 @@ publish-url = "https://test.pypi.org/legacy/"
 explicit = true
 
 [dependency-groups]
+dev = [
+    "yamllint>=1.37.1",
+]
 test = [
     "pytest-env>=1.1.5",
 ]
