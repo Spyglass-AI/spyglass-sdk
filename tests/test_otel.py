@@ -91,7 +91,7 @@ def test_create_exporter_missing_api_key():
     """Test _create_exporter raises ExporterConfigurationError for missing API key."""
     from spyglass_ai.otel import ExporterConfigurationError, _create_exporter
 
-    with pytest.raises(ExporterConfigurationError, match="SPYGLASS_API_KEY is not set"):
+    with pytest.raises(ExporterConfigurationError, match="SPYGLASS_API_KEY is required but not set"):
         _create_exporter()
 
 
