@@ -58,7 +58,7 @@ def _create_exporter():
     kwargs["endpoint"] = endpoint
 
     if not api_key:
-        raise ExporterConfigurationError("SPYGLASS_API_KEY is not set")
+        raise ExporterConfigurationError("SPYGLASS_API_KEY is required but not set")
 
     # Set Authorization header with Bearer token
     kwargs["headers"] = {"Authorization": f"Bearer {api_key}"}
