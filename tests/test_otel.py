@@ -38,9 +38,7 @@ def test_span_processor_configured():
 
     # Check that one of the processors is BatchSpanProcessor
     processors = provider._active_span_processor._span_processors
-    batch_processor_found = any(
-        isinstance(proc, BatchSpanProcessor) for proc in processors
-    )
+    batch_processor_found = any(isinstance(proc, BatchSpanProcessor) for proc in processors)
     assert batch_processor_found
 
 
@@ -90,7 +88,7 @@ def test_tracer_creates_spans():
 
 @patch.dict(os.environ, {}, clear=True)
 def test_create_exporter_missing_api_key():
-    """Test that _create_exporter raises ExporterConfigurationError when API key is missing."""
+    """Test _create_exporter raises ExporterConfigurationError for missing API key."""
     from spyglass_ai.otel import ExporterConfigurationError, _create_exporter
 
     with pytest.raises(ExporterConfigurationError, match="SPYGLASS_API_KEY is not set"):
@@ -123,7 +121,7 @@ def test_create_exporter_default_config(mock_otlp_exporter):
 )
 @patch("spyglass_ai.otel.OTLPSpanExporter")
 def test_create_exporter_with_custom_endpoint(mock_otlp_exporter):
-    """Test that _create_exporter configures custom endpoint from environment variable."""
+    """Test _create_exporter configures custom endpoint from env variable."""
     from spyglass_ai.otel import _create_exporter
 
     mock_exporter_instance = Mock()
@@ -142,7 +140,7 @@ def test_create_exporter_with_custom_endpoint(mock_otlp_exporter):
 
 @patch.dict(os.environ, {}, clear=True)
 def test_create_resource_missing_deployment_id():
-    """Test that _create_resource raises DeploymentConfigurationError when deployment ID is missing."""
+    """Test _create_resource raises DeploymentConfigurationError for missing deployment ID."""
     from spyglass_ai.otel import DeploymentConfigurationError, _create_resource
 
     with pytest.raises(

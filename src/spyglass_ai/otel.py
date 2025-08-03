@@ -32,9 +32,7 @@ def _create_resource():
     # Deployment information - this is required
     deployment_id = os.getenv("SPYGLASS_DEPLOYMENT_ID")
     if not deployment_id:
-        raise DeploymentConfigurationError(
-            "SPYGLASS_DEPLOYMENT_ID is required but not set"
-        )
+        raise DeploymentConfigurationError("SPYGLASS_DEPLOYMENT_ID is required but not set")
 
     # Use deployment_id for both service.name and deployment.id
     resource_attributes["service.name"] = deployment_id

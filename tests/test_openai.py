@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from opentelemetry.trace import Status, StatusCode
+from opentelemetry.trace import StatusCode
 
 from spyglass_ai.openai import spyglass_openai
 
@@ -39,12 +39,8 @@ class TestSpyglassOpenAI:
     def test_basic_wrapping(self, mock_tracer):
         """Test that the client is properly wrapped."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
         original_create = client.chat.completions.create
@@ -61,12 +57,8 @@ class TestSpyglassOpenAI:
     def test_span_creation(self, mock_tracer):
         """Test that spans are created with correct names."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
         client.chat.completions.create.return_value = MockOpenAIResponse()
@@ -79,20 +71,14 @@ class TestSpyglassOpenAI:
         )
 
         # Check span was created with correct name
-        mock_tracer.start_as_current_span.assert_called_once_with(
-            "openai.chat.completions.create"
-        )
+        mock_tracer.start_as_current_span.assert_called_once_with("openai.chat.completions.create")
 
     @patch("spyglass_ai.openai.spyglass_tracer")
     def test_request_attributes(self, mock_tracer):
         """Test that request attributes are properly captured."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
         client.chat.completions.create.return_value = MockOpenAIResponse()
@@ -125,12 +111,8 @@ class TestSpyglassOpenAI:
     def test_response_attributes(self, mock_tracer):
         """Test that response attributes are properly captured."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
 
@@ -160,12 +142,8 @@ class TestSpyglassOpenAI:
     def test_exception_handling(self, mock_tracer):
         """Test exception handling in the wrapper."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
 
@@ -192,12 +170,8 @@ class TestSpyglassOpenAI:
     def test_return_value(self, mock_tracer):
         """Test that the original return value is preserved."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         client = MockOpenAIClient()
         expected_response = MockOpenAIResponse(model="gpt-4")

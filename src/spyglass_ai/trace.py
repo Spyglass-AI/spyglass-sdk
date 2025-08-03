@@ -102,9 +102,7 @@ def _capture_arguments(span: Span, func: Callable, args: tuple, kwargs: dict) ->
 def _capture_return_value(span: Span, return_value: Any) -> None:
     """Capture return value as span attribute."""
     try:
-        span.set_attribute(
-            "function.return_value", _serialize_attribute_value(return_value)
-        )
+        span.set_attribute("function.return_value", _serialize_attribute_value(return_value))
     except Exception:
         # If return value capture fails, don't break the span
         span.set_attribute("function.return_value.capture_error", True)

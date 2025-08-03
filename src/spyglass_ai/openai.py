@@ -26,9 +26,7 @@ def spyglass_openai(client_instance):
     @functools.wraps(original_create_method)
     def new_method_for_client(*args, **kwargs):
         # Start a new span
-        with spyglass_tracer.start_as_current_span(
-            "openai.chat.completions.create"
-        ) as span:
+        with spyglass_tracer.start_as_current_span("openai.chat.completions.create") as span:
             try:
                 # Set attributes for the OpenAI call
                 # TODO: Double check these attributes
