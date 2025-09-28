@@ -32,7 +32,9 @@ def _create_resource():
     # Deployment information - this is required
     deployment_id = os.getenv("SPYGLASS_DEPLOYMENT_ID")
     if not deployment_id:
-        raise DeploymentConfigurationError("SPYGLASS_DEPLOYMENT_ID is required but not set")
+        raise DeploymentConfigurationError(
+            "SPYGLASS_DEPLOYMENT_ID is required but not set"
+        )
 
     # Use deployment_id for both service.name and deployment.id
     resource_attributes["service.name"] = deployment_id
@@ -67,15 +69,38 @@ def _create_exporter():
     return exporter
 
 
-# Create the tracer provider with resource attributes
-resource = _create_resource()
-provider = TracerProvider(resource=resource)
-exporter = _create_exporter()
-processor = BatchSpanProcessor(exporter)
-provider.add_span_processor(processor)
+# Global variables for lazy initialization
+_spyglass_tracer = None
 
-# Sets the global default tracer provider
-trace.set_tracer_provider(provider)
 
-# Creates a tracer from the global tracer provider
-spyglass_tracer = trace.get_tracer("spyglass-tracer")
+def get_spyglass_tracer():
+    """Get the Spyglass tracer, initializing it if necessary."""
+    global _spyglass_tracer
+
+    if _spyglass_tracer is not None:
+        return _spyglass_tracer
+
+    # Create the tracer provider with resource attributes
+    resource = _create_resource()
+    provider = TracerProvider(resource=resource)
+    exporter = _create_exporter()
+    processor = BatchSpanProcessor(exporter)
+    provider.add_span_processor(processor)
+
+    # Sets the global default tracer provider
+    trace.set_tracer_provider(provider)
+
+    # Create and cache the tracer
+    _spyglass_tracer = trace.get_tracer("spyglass-tracer")
+
+    return _spyglass_tracer
+
+
+# For backward compatibility, create the tracer attribute that gets initialized lazily
+class _LazyTracer:
+    def __getattr__(self, name):
+        tracer = get_spyglass_tracer()
+        return getattr(tracer, name)
+
+
+spyglass_tracer = _LazyTracer()

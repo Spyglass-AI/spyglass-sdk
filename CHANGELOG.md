@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for custom span names
 - Environment-based configuration (SPYGLASS_API_KEY, SPYGLASS_DEPLOYMENT_ID)
 - Comprehensive test suite with pytest
+- Added langchain-aws and langchain StructuredTool for MCP support
 
 ### Changed
 - Nothing yet
