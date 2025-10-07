@@ -40,7 +40,10 @@ def spyglass_trace(name: Optional[str] = None) -> Callable:
             span_name = name or f"{func.__module__}.{func.__qualname__}"
 
             # Use global tracer, no need to create new instance each time
-            with spyglass_tracer.start_as_current_span(span_name) as span:
+            # Set record_exception=False since we manually record exceptions in the except block
+            with spyglass_tracer.start_as_current_span(
+                span_name, record_exception=False
+            ) as span:
                 try:
                     # Set base attributes
                     _set_base_attributes(span, func)
@@ -102,7 +105,9 @@ def _capture_arguments(span: Span, func: Callable, args: tuple, kwargs: dict) ->
 def _capture_return_value(span: Span, return_value: Any) -> None:
     """Capture return value as span attribute."""
     try:
-        span.set_attribute("function.return_value", _serialize_attribute_value(return_value))
+        span.set_attribute(
+            "function.return_value", _serialize_attribute_value(return_value)
+        )
     except Exception:
         # If return value capture fails, don't break the span
         span.set_attribute("function.return_value.capture_error", True)

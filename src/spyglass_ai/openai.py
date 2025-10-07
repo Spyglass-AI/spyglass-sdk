@@ -31,8 +31,9 @@ def spyglass_openai(client_instance):
     @functools.wraps(original_create_method)
     def new_method_for_client(*args, **kwargs):
         # Start a new span
+        # Set record_exception=False since we manually record exceptions in the except block
         with spyglass_tracer.start_as_current_span(
-            "openai.chat.completions.create"
+            "openai.chat.completions.create", record_exception=False
         ) as span:
             try:
                 # Set OpenTelemetry GenAI semantic convention attributes
