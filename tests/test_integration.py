@@ -129,11 +129,13 @@ class TestIntegration:
 
         # Verify session tracing
         mock_tracer.start_as_current_span.assert_any_call(
-            "mcp.session.call_tool.get_weather"
+            "mcp.session.call_tool.get_weather", record_exception=False
         )
 
         # Verify tool tracing
-        mock_tracer.start_as_current_span.assert_any_call("mcp.tool.get_weather")
+        mock_tracer.start_as_current_span.assert_any_call(
+            "mcp.tool.get_weather", record_exception=False
+        )
 
     def test_conditional_imports_handling(self):
         """Test that the integration handles missing dependencies gracefully"""

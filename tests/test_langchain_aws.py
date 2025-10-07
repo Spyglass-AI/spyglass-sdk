@@ -92,7 +92,9 @@ class TestSpyglassChatBedrockConverse:
         result = wrapped_llm._generate(mock_messages)
 
         # Verify tracing
-        mock_tracer.start_as_current_span.assert_called_with("bedrock.chat.generate")
+        mock_tracer.start_as_current_span.assert_called_with(
+            "bedrock.chat.generate", record_exception=False
+        )
         # Check that set_status was called with OK status (don't check exact object)
         assert mock_span.set_status.called
         status_call = mock_span.set_status.call_args[0][0]

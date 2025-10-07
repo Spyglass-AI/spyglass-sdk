@@ -80,7 +80,7 @@ class TestSpyglassOpenAI:
 
         # Check span was created with correct name
         mock_tracer.start_as_current_span.assert_called_once_with(
-            "openai.chat.completions.create"
+            "openai.chat.completions.create", record_exception=False
         )
 
     @patch("spyglass_ai.openai.spyglass_tracer")

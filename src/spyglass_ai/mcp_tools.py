@@ -172,7 +172,9 @@ def _wrap_mcp_tool(tool):
 
         @functools.wraps(original_coroutine)
         async def traced_coroutine(**kwargs):
-            with spyglass_tracer.start_as_current_span(f"mcp.tool.{tool.name}") as span:
+            with spyglass_tracer.start_as_current_span(
+                f"mcp.tool.{tool.name}", record_exception=False
+            ) as span:
                 try:
                     # Set tool attributes
                     _set_tool_attributes(span, tool, kwargs)
@@ -202,7 +204,9 @@ def _wrap_mcp_tool(tool):
 
         @functools.wraps(original_func)
         def traced_func(**kwargs):
-            with spyglass_tracer.start_as_current_span(f"mcp.tool.{tool.name}") as span:
+            with spyglass_tracer.start_as_current_span(
+                f"mcp.tool.{tool.name}", record_exception=False
+            ) as span:
                 try:
                     # Set tool attributes
                     _set_tool_attributes(span, tool, kwargs)
