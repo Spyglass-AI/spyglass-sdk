@@ -98,37 +98,34 @@ answer = have_conversation("What is the capital of France?")
 print(answer)
 ```
 
-## What Gets Traced
+## Google Vertex AI (Gemini)
 
-### Function Tracing (`@spyglass_trace`)
-- Function name, module, and qualified name
-- Input arguments (excluding `self` and `cls`)
-- Return values
-- Execution time
-- Any exceptions that occur
+```bash
+pip install spyglass-ai[langchain-google-vertexai]
+```
 
-### OpenAI Integration (`spyglass_openai`)
-- Model used
-- Number of messages
-- Request parameters (max_tokens, temperature, etc.)
-- Token usage (prompt, completion, total)
-- Response model
-- Any API errors
+```python
+from langchain_google_vertexai import ChatVertexAI
+from langchain_core.messages import HumanMessage
+from spyglass_ai import spyglass_chatvertexai
+
+llm = ChatVertexAI(
+    model_name="gemini-2.0-flash-exp",
+    project="your-project-id",
+    location="us-central1"
+)
+
+traced_llm = spyglass_chatvertexai(llm)
+
+response = traced_llm.invoke([
+    HumanMessage(content="Analyze last month's API error rates by service")
+])
+```
 
 ## Development
-### Install Dependencies
+
 ```bash
 uv sync --extra test
-```
-
-### Run All Tests
-```bash
-# Run all tests
 uv run pytest
-
-# Run with coverage
-uv run pytest --cov=src --cov-report=term-missing
-
-# Run specific test file
-uv run pytest tests/test_trace.py -v
 ```
+

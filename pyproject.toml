@@ -66,6 +66,11 @@ langchain-aws = [
     "langchain-core>=0.1.0",
     "python-dotenv>=1.1.1",
 ]
+langchain-google-vertexai = [
+    "langchain-google-vertexai>=2.0.0",
+    "langchain-core>=0.1.0",
+    "python-dotenv>=1.1.1",
+]
 mcp = [
     "mcp>=1.0.0",
     "langchain-mcp-adapters>=0.1.0",
