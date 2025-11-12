@@ -98,6 +98,23 @@ answer = have_conversation("What is the capital of France?")
 print(answer)
 ```
 
+## What Gets Traced
+
+### Function Tracing (`@spyglass_trace`)
+- Function name, module, and qualified name
+- Input arguments (excluding `self` and `cls`)
+- Return values
+- Execution time
+- Any exceptions that occur
+
+### OpenAI Integration (`spyglass_openai`)
+- Model used
+- Number of messages
+- Request parameters (max_tokens, temperature, etc.)
+- Token usage (prompt, completion, total)
+- Response model
+- Any API errors
+
 ## Google Vertex AI (Gemini)
 
 ```bash
