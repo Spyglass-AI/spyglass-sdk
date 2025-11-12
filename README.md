@@ -115,7 +115,32 @@ print(answer)
 - Response model
 - Any API errors
 
+## Google Vertex AI (Gemini)
+
+```bash
+pip install spyglass-ai[langchain-google-vertexai]
+```
+
+```python
+from langchain_google_vertexai import ChatVertexAI
+from langchain_core.messages import HumanMessage
+from spyglass_ai import spyglass_chatvertexai
+
+llm = ChatVertexAI(
+    model_name="gemini-2.0-flash-exp",
+    project="your-project-id",
+    location="us-central1"
+)
+
+traced_llm = spyglass_chatvertexai(llm)
+
+response = traced_llm.invoke([
+    HumanMessage(content="Analyze last month's API error rates by service")
+])
+```
+
 ## Development
+
 ### Install Dependencies
 ```bash
 uv sync --extra test
@@ -132,3 +157,4 @@ uv run pytest --cov=src --cov-report=term-missing
 # Run specific test file
 uv run pytest tests/test_trace.py -v
 ```
+

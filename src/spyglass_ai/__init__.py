@@ -8,6 +8,13 @@ try:
 except ImportError:
     _LANGCHAIN_AWS_AVAILABLE = False
 
+# LangChain Google Vertex AI integrations
+try:
+    from .langchain_google_vertexai import spyglass_chatvertexai
+    _LANGCHAIN_GOOGLE_VERTEXAI_AVAILABLE = True
+except ImportError:
+    _LANGCHAIN_GOOGLE_VERTEXAI_AVAILABLE = False
+
 # MCP tools integrations  
 try:
     from .mcp_tools import spyglass_mcp_tools, spyglass_mcp_tools_async, wrap_mcp_session
@@ -21,6 +28,9 @@ __all__ = ["spyglass_trace", "spyglass_openai"]
 # Add conditional exports
 if _LANGCHAIN_AWS_AVAILABLE:
     __all__.append("spyglass_chatbedrockconverse")
+
+if _LANGCHAIN_GOOGLE_VERTEXAI_AVAILABLE:
+    __all__.append("spyglass_chatvertexai")
 
 if _MCP_TOOLS_AVAILABLE:
     __all__.extend(["spyglass_mcp_tools", "spyglass_mcp_tools_async", "wrap_mcp_session"])
