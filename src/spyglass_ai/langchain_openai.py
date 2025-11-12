@@ -1,4 +1,3 @@
-import functools
 import json
 from typing import Any, Dict, List
 
@@ -7,15 +6,15 @@ from opentelemetry.trace import Status, StatusCode
 from .otel import spyglass_tracer
 
 
-def spyglass_chatbedrockconverse(llm_instance):
+def spyglass_chatopenai(llm_instance):
     """
-    Wraps a ChatBedrockConverse instance to add comprehensive tracing.
+    Wraps a ChatOpenAI instance to add comprehensive tracing.
 
     This wrapper follows OpenTelemetry GenAI semantic conventions:
     https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/
 
     Args:
-        llm_instance: A ChatBedrockConverse instance
+        llm_instance: A ChatOpenAI instance
 
     Returns:
         The same instance with tracing enabled
@@ -36,11 +35,11 @@ def _wrap_generate_method(llm_instance):
     def traced_generate(messages, stop=None, run_manager=None, **kwargs):
         # Set record_exception=False since we manually record exceptions in the except block
         with spyglass_tracer.start_as_current_span(
-            "bedrock.chat.generate", record_exception=False
+            "openai.chat.generate", record_exception=False
         ) as span:
             try:
-                # Set Bedrock-specific attributes
-                _set_bedrock_attributes(span, llm_instance, messages, kwargs)
+                # Set OpenAI-specific attributes
+                _set_openai_attributes(span, llm_instance, messages, kwargs)
 
                 # Call original method
                 result = original_generate(messages, stop, run_manager, **kwargs)
@@ -56,9 +55,7 @@ def _wrap_generate_method(llm_instance):
                 span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
-    # Safely wrap function metadata, handling union type annotations
-    # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
-    # Instead, manually copy safe attributes
+    # Safely wrap function metadata
     try:
         traced_generate.__name__ = getattr(original_generate, "__name__", "traced_generate")
         traced_generate.__doc__ = getattr(original_generate, "__doc__", None)
@@ -70,18 +67,12 @@ def _wrap_generate_method(llm_instance):
     llm_instance._generate = traced_generate
 
 
-def _set_bedrock_attributes(span, llm_instance, messages, kwargs):
+def _set_openai_attributes(span, llm_instance, messages, kwargs):
     """Set span attributes following GenAI semantic conventions"""
     # GenAI semantic convention attributes
     span.set_attribute("gen_ai.operation.name", "chat")
-    span.set_attribute("gen_ai.system", "aws_bedrock")
-    span.set_attribute("gen_ai.request.model", llm_instance.model_id)
-
-    # AWS Bedrock specific attributes (using gen_ai prefix for consistency)
-    span.set_attribute(
-        "gen_ai.request.aws.region", llm_instance.region_name or "us-east-1"
-    )
-    span.set_attribute("gen_ai.request.aws.provider", llm_instance.provider)
+    span.set_attribute("gen_ai.system", "openai")
+    span.set_attribute("gen_ai.request.model", llm_instance.model_name)
 
     # Model parameters (GenAI semantic conventions)
     if llm_instance.temperature is not None:
@@ -104,19 +95,12 @@ def _set_bedrock_attributes(span, llm_instance, messages, kwargs):
         tool_names = []
         for tool in kwargs["tools"]:
             if isinstance(tool, dict):
-                if "toolSpec" in tool:
-                    tool_names.append(tool["toolSpec"].get("name", "unknown"))
-                elif "function" in tool:
+                if "function" in tool:
                     tool_names.append(tool["function"].get("name", "unknown"))
+                elif "name" in tool:
+                    tool_names.append(tool.get("name", "unknown"))
         if tool_names:
             span.set_attribute("gen_ai.request.tools.names", ",".join(tool_names))
-
-    # AWS Bedrock specific configurations
-    if llm_instance.guardrail_config:
-        span.set_attribute("gen_ai.request.aws.guardrails.enabled", True)
-
-    if llm_instance.performance_config:
-        span.set_attribute("gen_ai.request.aws.performance_config.enabled", True)
 
 
 def _set_response_attributes(span, result):
@@ -125,58 +109,35 @@ def _set_response_attributes(span, result):
         generation = result.generations[0]
         message = generation.message
 
-        # Usage metadata (LangChain extracts from Converse "usage")
+        # Usage metadata (UsageMetadata is a TypedDict from langchain_core.messages.ai)
+        # Primary source: message.usage_metadata (always a dict when present)
+        usage = None
         if hasattr(message, "usage_metadata") and message.usage_metadata:
             usage = message.usage_metadata
-
-            # Handle the actual format returned by LangChain AWS
-            if isinstance(usage, dict):
-                # Dictionary format - use keys directly
-                if "input_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.input_tokens", usage["input_tokens"]
-                    )
-                if "output_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.output_tokens", usage["output_tokens"]
-                    )
-                if "total_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.total_tokens", usage["total_tokens"]
-                    )
-
-                # AWS Bedrock cache tokens (dict format)
-                if "input_token_details" in usage and isinstance(
-                    usage["input_token_details"], dict
-                ):
-                    details = usage["input_token_details"]
-                    if "cache_read" in details:
-                        span.set_attribute(
-                            "gen_ai.usage.aws.cache_read_tokens", details["cache_read"]
-                        )
-                    if "cache_creation" in details:
-                        span.set_attribute(
-                            "gen_ai.usage.aws.cache_write_tokens",
-                            details["cache_creation"],
-                        )
-            else:
-                # Object format - use attributes
-                span.set_attribute("gen_ai.usage.input_tokens", usage.input_tokens)
-                span.set_attribute("gen_ai.usage.output_tokens", usage.output_tokens)
-                span.set_attribute("gen_ai.usage.total_tokens", usage.total_tokens)
-
-                # AWS Bedrock cache tokens (object format)
-                if hasattr(usage, "input_token_details") and usage.input_token_details:
-                    details = usage.input_token_details
-                    if "cache_read" in details:
-                        span.set_attribute(
-                            "gen_ai.usage.aws.cache_read_tokens", details["cache_read"]
-                        )
-                    if "cache_creation" in details:
-                        span.set_attribute(
-                            "gen_ai.usage.aws.cache_write_tokens",
-                            details["cache_creation"],
-                        )
+        
+        # Fallback: check llm_output.token_usage if usage_metadata is not available
+        if not usage and hasattr(result, "llm_output") and result.llm_output:
+            token_usage = result.llm_output.get("token_usage")
+            if token_usage:
+                # Convert OpenAI's token_usage format to UsageMetadata format
+                usage = {
+                    "input_tokens": token_usage.get("prompt_tokens", 0),
+                    "output_tokens": token_usage.get("completion_tokens", 0),
+                    "total_tokens": token_usage.get("total_tokens", 0),
+                }
+        
+        # Set usage attributes (UsageMetadata is a TypedDict, accessed as dict)
+        if usage and isinstance(usage, dict):
+            input_tokens = usage.get("input_tokens")
+            output_tokens = usage.get("output_tokens")
+            total_tokens = usage.get("total_tokens")
+            
+            if input_tokens is not None:
+                span.set_attribute("gen_ai.usage.input_tokens", input_tokens)
+            if output_tokens is not None:
+                span.set_attribute("gen_ai.usage.output_tokens", output_tokens)
+            if total_tokens is not None:
+                span.set_attribute("gen_ai.usage.total_tokens", total_tokens)
 
         # Format and record output messages
         formatted_output = _format_langchain_messages([message])
@@ -188,33 +149,21 @@ def _set_response_attributes(span, result):
             tool_names = [tc.get("name", "unknown") for tc in message.tool_calls]
             span.set_attribute("gen_ai.response.tools.names", ",".join(tool_names))
 
-        # Response metadata (LangChain adds model_name and preserves Converse response fields)
+        # Response metadata
         if hasattr(message, "response_metadata") and message.response_metadata:
             metadata = message.response_metadata
 
-            # Model name (LangChain always sets this)
+            # Model name
             if "model_name" in metadata:
                 span.set_attribute("gen_ai.response.model", metadata["model_name"])
 
-            # Stop reason from Converse API
-            if "stopReason" in metadata:
-                span.set_attribute(
-                    "gen_ai.response.finish_reasons", metadata["stopReason"]
-                )
-
-            # Latency metrics (LangChain converts to list format)
-            if "metrics" in metadata and "latencyMs" in metadata["metrics"]:
-                latency = metadata["metrics"]["latencyMs"]
-                # LangChain converts single values to lists, so take first element
-                if isinstance(latency, list) and latency:
-                    span.set_attribute("gen_ai.response.aws.latency_ms", latency[0])
-                elif isinstance(latency, (int, float)):
-                    span.set_attribute("gen_ai.response.aws.latency_ms", latency)
+            # Finish reason
+            if "finish_reason" in metadata:
+                span.set_attribute("gen_ai.response.finish_reasons", metadata["finish_reason"])
 
 
 def _wrap_async_methods(llm_instance):
-    """Wrap async methods if they exist (inherited from base class)"""
-    # Check if async methods are available and wrap them
+    """Wrap async methods if they exist"""
     if hasattr(llm_instance, "_agenerate"):
         _wrap_agenerate_method(llm_instance)
 
@@ -226,11 +175,11 @@ def _wrap_agenerate_method(llm_instance):
     async def traced_agenerate(messages, stop=None, run_manager=None, **kwargs):
         # Set record_exception=False since we manually record exceptions in the except block
         with spyglass_tracer.start_as_current_span(
-            "bedrock.chat.agenerate", record_exception=False
+            "openai.chat.agenerate", record_exception=False
         ) as span:
             try:
-                # Set Bedrock-specific attributes
-                _set_bedrock_attributes(span, llm_instance, messages, kwargs)
+                # Set OpenAI-specific attributes
+                _set_openai_attributes(span, llm_instance, messages, kwargs)
 
                 # Call original method
                 result = await original_agenerate(messages, stop, run_manager, **kwargs)
@@ -246,9 +195,7 @@ def _wrap_agenerate_method(llm_instance):
                 span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
-    # Safely wrap function metadata, handling union type annotations
-    # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
-    # Instead, manually copy safe attributes
+    # Safely wrap function metadata
     try:
         traced_agenerate.__name__ = getattr(original_agenerate, "__name__", "traced_agenerate")
         traced_agenerate.__doc__ = getattr(original_agenerate, "__doc__", None)
@@ -321,3 +268,4 @@ def _format_langchain_messages(messages: List[Any]) -> List[Dict[str, Any]]:
         formatted_messages.append(formatted_message)
 
     return formatted_messages
+

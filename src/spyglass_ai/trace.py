@@ -30,43 +30,113 @@ def spyglass_trace(name: Optional[str] = None) -> Callable:
     """
 
     def decorator(func: Callable) -> Callable:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            """
-            This function will be called in place of the original function
-            that has the @spyglass_trace decorator.
-            """
-            # Generate span name
-            span_name = name or f"{func.__module__}.{func.__qualname__}"
+        # Check if function is async
+        if inspect.iscoroutinefunction(func):
+            async def async_wrapper(*args, **kwargs):
+                """
+                This function will be called in place of the original async function
+                that has the @spyglass_trace decorator.
+                """
+                # Generate span name
+                span_name = name or f"{func.__module__}.{func.__qualname__}"
 
-            # Use global tracer, no need to create new instance each time
-            # Set record_exception=False since we manually record exceptions in the except block
-            with spyglass_tracer.start_as_current_span(
-                span_name, record_exception=False
-            ) as span:
-                try:
-                    # Set base attributes
-                    _set_base_attributes(span, func)
+                # Use global tracer, no need to create new instance each time
+                # Set record_exception=False since we manually record exceptions in the except block
+                with spyglass_tracer.start_as_current_span(
+                    span_name, record_exception=False
+                ) as span:
+                    try:
+                        # Set base attributes
+                        _set_base_attributes(span, func)
 
-                    # Capture arguments
-                    _capture_arguments(span, func, args, kwargs)
+                        # Capture arguments
+                        _capture_arguments(span, func, args, kwargs)
 
-                    # Execute the original function
-                    result = func(*args, **kwargs)
+                        # Execute the original async function
+                        result = await func(*args, **kwargs)
 
-                    # Capture return value
-                    _capture_return_value(span, result)
+                        # Capture return value
+                        _capture_return_value(span, result)
 
-                    # Mark span as successful
-                    span.set_status(Status(StatusCode.OK))
+                        # Mark span as successful
+                        span.set_status(Status(StatusCode.OK))
 
-                    return result
+                        return result
 
-                except Exception as e:
-                    # Record exception and mark span as error
-                    span.record_exception(e)
-                    span.set_status(Status(StatusCode.ERROR, str(e)))
-                    raise
+                    except Exception as e:
+                        # Record exception and mark span as error
+                        span.record_exception(e)
+                        span.set_status(Status(StatusCode.ERROR, str(e)))
+                        raise
+
+            wrapper = async_wrapper
+        else:
+            def sync_wrapper(*args, **kwargs):
+                """
+                This function will be called in place of the original function
+                that has the @spyglass_trace decorator.
+                """
+                # Generate span name
+                span_name = name or f"{func.__module__}.{func.__qualname__}"
+
+                # Use global tracer, no need to create new instance each time
+                # Set record_exception=False since we manually record exceptions in the except block
+                with spyglass_tracer.start_as_current_span(
+                    span_name, record_exception=False
+                ) as span:
+                    try:
+                        # Set base attributes
+                        _set_base_attributes(span, func)
+
+                        # Capture arguments
+                        _capture_arguments(span, func, args, kwargs)
+
+                        # Execute the original function
+                        result = func(*args, **kwargs)
+
+                        # Capture return value
+                        _capture_return_value(span, result)
+
+                        # Mark span as successful
+                        span.set_status(Status(StatusCode.OK))
+
+                        return result
+
+                    except Exception as e:
+                        # Record exception and mark span as error
+                        span.record_exception(e)
+                        span.set_status(Status(StatusCode.ERROR, str(e)))
+                        raise
+
+            wrapper = sync_wrapper
+
+        # Safely wrap function metadata, handling union type annotations
+        # Try functools.update_wrapper first, but fall back to manual copying
+        # if UnionType issues occur (Python 3.10+)
+        try:
+            functools.update_wrapper(wrapper, func)
+        except (TypeError, AttributeError):
+            # Fall back to manual attribute copying if update_wrapper fails
+            # (e.g., due to UnionType issues in Python 3.10+)
+            try:
+                wrapper.__name__ = getattr(func, "__name__", "wrapper")
+                wrapper.__doc__ = getattr(func, "__doc__", None)
+                wrapper.__module__ = getattr(func, "__module__", None)
+                wrapper.__qualname__ = getattr(func, "__qualname__", wrapper.__name__)
+                # Preserve function signature for frameworks like FastAPI that inspect it
+                if hasattr(func, "__signature__"):
+                    wrapper.__signature__ = func.__signature__
+                else:
+                    # Try to get signature from inspect if __signature__ doesn't exist
+                    try:
+                        wrapper.__signature__ = inspect.signature(func)
+                    except (ValueError, TypeError):
+                        pass  # If signature can't be determined, continue without it
+                # Preserve annotations for type checking and frameworks like FastAPI
+                if hasattr(func, "__annotations__"):
+                    wrapper.__annotations__ = func.__annotations__
+            except (TypeError, AttributeError):
+                pass  # If copying fails, continue without metadata
 
         return wrapper
 

@@ -25,15 +25,73 @@ class DeploymentConfigurationError(SpyglassOtelError):
     pass
 
 
+# Module-level configuration storage for programmatic configuration
+_config = {
+    "api_key": None,
+    "deployment_id": None,
+    "endpoint": None,
+}
+
+
+def configure_spyglass(
+    api_key: str = None,
+    deployment_id: str = None,
+    endpoint: str = None,
+):
+    """Configure Spyglass SDK programmatically.
+
+    This function allows you to configure the Spyglass SDK without using
+    environment variables. Configuration values passed here take precedence
+    over environment variables.
+
+    Args:
+        api_key: Spyglass API key (required if not set via SPYGLASS_API_KEY env var).
+                 Pass None to clear programmatic config and use env var instead.
+        deployment_id: Deployment identifier (required if not set via SPYGLASS_DEPLOYMENT_ID env var).
+                       Pass None to clear programmatic config and use env var instead.
+        endpoint: Optional custom OTLP endpoint (overrides SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT).
+                  Pass None to clear programmatic config and use env var instead.
+
+    Example:
+        ```python
+        from spyglass_ai import configure_spyglass
+
+        configure_spyglass(
+            api_key="your-api-key",
+            deployment_id="my-service-v1.0.0",
+            endpoint="https://custom-endpoint.com/v1/traces"  # Optional
+        )
+        ```
+
+    Note:
+        If the tracer has already been initialized, calling configure_spyglass() will reset it
+        so it reinitializes with the new configuration. The tracer is initialized
+        lazily on first use after configuration.
+    """
+    global _config, _spyglass_tracer
+
+    # Update config for provided non-None values
+    if api_key is not None:
+        _config["api_key"] = api_key
+    if deployment_id is not None:
+        _config["deployment_id"] = deployment_id
+    if endpoint is not None:
+        _config["endpoint"] = endpoint
+
+    # Reset tracer so it reinitializes with new config
+    _spyglass_tracer = None
+
+
 def _create_resource():
     """Create and return a Resource with deployment and service information."""
     resource_attributes = {}
 
-    # Deployment information - this is required
-    deployment_id = os.getenv("SPYGLASS_DEPLOYMENT_ID")
+    # Check programmatic config first, then fall back to env vars
+    deployment_id = _config["deployment_id"] or os.getenv("SPYGLASS_DEPLOYMENT_ID")
     if not deployment_id:
         raise DeploymentConfigurationError(
-            "SPYGLASS_DEPLOYMENT_ID is required but not set"
+            "SPYGLASS_DEPLOYMENT_ID is required but not set. "
+            "Set it via configure_spyglass() or SPYGLASS_DEPLOYMENT_ID environment variable."
         )
 
     # Use deployment_id for both service.name and deployment.id
@@ -46,24 +104,28 @@ def _create_resource():
 def _create_exporter():
     """Create and return an OTLP HTTP span exporter.
 
-    Uses SPYGLASS_API_KEY and SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT env vars.
+    Uses programmatic config if set, otherwise falls back to
+    SPYGLASS_API_KEY and SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT env vars.
     """
-    api_key = os.getenv("SPYGLASS_API_KEY")
+    # Check programmatic config first, then fall back to env vars
+    api_key = _config["api_key"] or os.getenv("SPYGLASS_API_KEY")
 
-    # Check for custom endpoint (for development)
-    endpoint = os.getenv(
+    # Check for custom endpoint (programmatic config takes precedence)
+    endpoint = _config["endpoint"] or os.getenv(
         "SPYGLASS_OTEL_EXPORTER_OTLP_ENDPOINT",
         "https://ingest.spyglass-ai.com/v1/traces",
     )
 
-    kwargs = {}
-    kwargs["endpoint"] = endpoint
-
     if not api_key:
-        raise ExporterConfigurationError("SPYGLASS_API_KEY is required but not set")
+        raise ExporterConfigurationError(
+            "SPYGLASS_API_KEY is required but not set. "
+            "Set it via configure_spyglass() or SPYGLASS_API_KEY environment variable."
+        )
 
-    # Set Authorization header with Bearer token
-    kwargs["headers"] = {"Authorization": f"Bearer {api_key}"}
+    kwargs = {
+        "endpoint": endpoint,
+        "headers": {"Authorization": f"Bearer {api_key}"},
+    }
 
     exporter = OTLPSpanExporter(**kwargs)
     return exporter
