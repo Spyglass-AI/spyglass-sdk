@@ -141,8 +141,20 @@ response = traced_llm.invoke([
 
 ## Development
 
+### Install Dependencies
 ```bash
 uv sync --extra test
+```
+
+### Run All Tests
+```bash
+# Run all tests
 uv run pytest
+
+# Run with coverage
+uv run pytest --cov=src --cov-report=term-missing
+
+# Run specific test file
+uv run pytest tests/test_trace.py -v
 ```
 
