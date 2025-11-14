@@ -64,18 +64,14 @@ class TestSpyglassMCPTools:
 
     def test_spyglass_mcp_tools_no_tools_no_session_raises_error(self):
         """Test that providing neither tools nor session raises ValueError"""
-        with pytest.raises(
-            ValueError, match="Either session or connection must be provided"
-        ):
+        with pytest.raises(ValueError, match="Either session or connection must be provided"):
             spyglass_mcp_tools()
 
     def test_spyglass_mcp_tools_no_tools_with_session_raises_error(self):
         """Test that loading tools without async context raises ValueError"""
         mock_session = Mock()
 
-        with pytest.raises(
-            ValueError, match="Loading tools automatically requires async context"
-        ):
+        with pytest.raises(ValueError, match="Loading tools automatically requires async context"):
             spyglass_mcp_tools(session=mock_session)
 
     @pytest.mark.asyncio
@@ -109,9 +105,7 @@ class TestSpyglassMCPTools:
         mock_span.set_attribute.assert_any_call("mcp.tool.schema_fields", 2)
 
         # Verify response format
-        mock_span.set_attribute.assert_any_call(
-            "mcp.tool.response_format", "content_and_artifact"
-        )
+        mock_span.set_attribute.assert_any_call("mcp.tool.response_format", "content_and_artifact")
 
     def test_set_tool_attributes_minimal_tool(self, mock_span):
         """Test _set_tool_attributes with minimal tool"""
@@ -134,9 +128,7 @@ class TestSpyglassMCPTools:
         _set_tool_result_attributes(mock_span, result)
 
         mock_span.set_attribute.assert_any_call("mcp.tool.result.type", "tuple")
-        mock_span.set_attribute.assert_any_call(
-            "mcp.tool.result.content_type", "string"
-        )
+        mock_span.set_attribute.assert_any_call("mcp.tool.result.content_type", "string")
         mock_span.set_attribute.assert_any_call("mcp.tool.result.content_length", 25)
         mock_span.set_attribute.assert_any_call("mcp.tool.result.has_artifacts", True)
         mock_span.set_attribute.assert_any_call("mcp.tool.result.artifacts_count", 1)

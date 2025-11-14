@@ -114,7 +114,7 @@ def _set_response_attributes(span, result):
         usage = None
         if hasattr(message, "usage_metadata") and message.usage_metadata:
             usage = message.usage_metadata
-        
+
         # Fallback: check llm_output.token_usage if usage_metadata is not available
         if not usage and hasattr(result, "llm_output") and result.llm_output:
             token_usage = result.llm_output.get("token_usage")
@@ -125,13 +125,13 @@ def _set_response_attributes(span, result):
                     "output_tokens": token_usage.get("completion_tokens", 0),
                     "total_tokens": token_usage.get("total_tokens", 0),
                 }
-        
+
         # Set usage attributes (UsageMetadata is a TypedDict, accessed as dict)
         if usage and isinstance(usage, dict):
             input_tokens = usage.get("input_tokens")
             output_tokens = usage.get("output_tokens")
             total_tokens = usage.get("total_tokens")
-            
+
             if input_tokens is not None:
                 span.set_attribute("gen_ai.usage.input_tokens", input_tokens)
             if output_tokens is not None:
@@ -200,7 +200,9 @@ def _wrap_agenerate_method(llm_instance):
         traced_agenerate.__name__ = getattr(original_agenerate, "__name__", "traced_agenerate")
         traced_agenerate.__doc__ = getattr(original_agenerate, "__doc__", None)
         traced_agenerate.__module__ = getattr(original_agenerate, "__module__", None)
-        traced_agenerate.__qualname__ = getattr(original_agenerate, "__qualname__", "traced_agenerate")
+        traced_agenerate.__qualname__ = getattr(
+            original_agenerate, "__qualname__", "traced_agenerate"
+        )
     except (TypeError, AttributeError):
         pass  # If copying fails, continue without metadata
 
@@ -253,9 +255,7 @@ def _format_langchain_messages(messages: List[Any]) -> List[Dict[str, Any]]:
                     "type": "function",
                     "function": {
                         "name": tc.get("name", ""),
-                        "arguments": json.dumps(tc.get("args", {}))
-                        if tc.get("args")
-                        else "",
+                        "arguments": json.dumps(tc.get("args", {})) if tc.get("args") else "",
                     },
                 }
                 for tc in message.tool_calls
@@ -268,4 +268,3 @@ def _format_langchain_messages(messages: List[Any]) -> List[Dict[str, Any]]:
         formatted_messages.append(formatted_message)
 
     return formatted_messages
-

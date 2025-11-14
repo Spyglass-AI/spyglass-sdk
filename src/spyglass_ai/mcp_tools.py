@@ -30,9 +30,7 @@ def spyglass_mcp_tools(session=None, tools=None, connection=None):
 
         # Load all tools if none specified
         if session is None and connection is None:
-            raise ValueError(
-                "Either session or connection must be provided when tools is None"
-            )
+            raise ValueError("Either session or connection must be provided when tools is None")
 
         # This would need to be called in an async context
         raise ValueError(
@@ -130,9 +128,7 @@ def _wrap_mcp_tool(tool):
                     original_coroutine, "__name__", "traced_coroutine"
                 )
                 traced_coroutine.__doc__ = getattr(original_coroutine, "__doc__", None)
-                traced_coroutine.__module__ = getattr(
-                    original_coroutine, "__module__", None
-                )
+                traced_coroutine.__module__ = getattr(original_coroutine, "__module__", None)
             except (TypeError, AttributeError):
                 pass  # If copying fails, continue without metadata
 
@@ -181,11 +177,11 @@ def _wrap_mcp_tool(tool):
                 response_format=getattr(tool, "response_format", "content"),
                 metadata=getattr(tool, "metadata", None),
             )
-            
+
             # Also wrap ainvoke method for StructuredTool since LangChain calls it directly
             if hasattr(new_tool, "ainvoke"):
                 original_ainvoke = new_tool.ainvoke
-                
+
                 async def traced_ainvoke(self, input_data, config=None, **kwargs):
                     with spyglass_tracer.start_as_current_span(
                         f"mcp.tool.{tool.name}.ainvoke", record_exception=False
@@ -193,31 +189,32 @@ def _wrap_mcp_tool(tool):
                         try:
                             # Set tool attributes
                             _set_tool_attributes(span, self, {"input": input_data})
-                            
+
                             # Execute tool - call the original method with self bound
                             result = await original_ainvoke(input_data, config, **kwargs)
-                            
+
                             # Set result attributes
                             _set_tool_result_attributes(span, result)
-                            
+
                             span.set_status(Status(StatusCode.OK))
                             return result
-                            
+
                         except Exception as e:
                             span.record_exception(e)
                             span.set_status(Status(StatusCode.ERROR, str(e)))
                             raise
-                
+
                 # Replace ainvoke method using __dict__ since StructuredTool is a Pydantic model
                 # Bind the traced function to the tool instance
                 try:
                     import types
+
                     bound_traced_ainvoke = types.MethodType(traced_ainvoke, new_tool)
                     new_tool.__dict__["ainvoke"] = bound_traced_ainvoke
                 except (AttributeError, ValueError, TypeError):
                     # If we can't replace it, the coroutine wrapping should still work
                     pass
-            
+
             return new_tool
         except Exception:
             # If creating new tool fails, return original
@@ -256,13 +253,9 @@ def _wrap_mcp_tool(tool):
         # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
         # Instead, manually copy safe attributes
         try:
-            traced_coroutine.__name__ = getattr(
-                original_coroutine, "__name__", "traced_coroutine"
-            )
+            traced_coroutine.__name__ = getattr(original_coroutine, "__name__", "traced_coroutine")
             traced_coroutine.__doc__ = getattr(original_coroutine, "__doc__", None)
-            traced_coroutine.__module__ = getattr(
-                original_coroutine, "__module__", None
-            )
+            traced_coroutine.__module__ = getattr(original_coroutine, "__module__", None)
         except (TypeError, AttributeError):
             pass  # If copying fails, continue without metadata
 
@@ -344,9 +337,7 @@ def _wrap_mcp_tool(tool):
         # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
         # Instead, manually copy safe attributes
         try:
-            traced_invoke.__name__ = getattr(
-                original_invoke, "__name__", "traced_invoke"
-            )
+            traced_invoke.__name__ = getattr(original_invoke, "__name__", "traced_invoke")
             traced_invoke.__doc__ = getattr(original_invoke, "__doc__", None)
             traced_invoke.__module__ = getattr(original_invoke, "__module__", None)
         except (TypeError, AttributeError):
@@ -387,9 +378,7 @@ def _wrap_mcp_tool(tool):
         # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
         # Instead, manually copy safe attributes
         try:
-            traced_ainvoke.__name__ = getattr(
-                original_ainvoke, "__name__", "traced_ainvoke"
-            )
+            traced_ainvoke.__name__ = getattr(original_ainvoke, "__name__", "traced_ainvoke")
             traced_ainvoke.__doc__ = getattr(original_ainvoke, "__doc__", None)
             traced_ainvoke.__module__ = getattr(original_ainvoke, "__module__", None)
         except (TypeError, AttributeError):
@@ -435,9 +424,7 @@ def _set_tool_attributes(span, tool, kwargs):
         # Get schema field count if possible
         try:
             if hasattr(tool.args_schema, "model_fields"):
-                span.set_attribute(
-                    "mcp.tool.schema_fields", len(tool.args_schema.model_fields)
-                )
+                span.set_attribute("mcp.tool.schema_fields", len(tool.args_schema.model_fields))
         except Exception:
             pass  # Ignore schema introspection errors
 
@@ -523,18 +510,12 @@ def wrap_mcp_session(session):
 
                     # Set result attributes
                     if hasattr(result, "content") and result.content:
-                        span.set_attribute(
-                            "mcp.session.result.content_blocks", len(result.content)
-                        )
+                        span.set_attribute("mcp.session.result.content_blocks", len(result.content))
 
                     if hasattr(result, "isError"):
-                        span.set_attribute(
-                            "mcp.session.result.is_error", result.isError
-                        )
+                        span.set_attribute("mcp.session.result.is_error", result.isError)
                         if result.isError:
-                            span.set_status(
-                                Status(StatusCode.ERROR, "MCP tool returned error")
-                            )
+                            span.set_status(Status(StatusCode.ERROR, "MCP tool returned error"))
                         else:
                             span.set_status(Status(StatusCode.OK))
                     else:
@@ -551,13 +532,9 @@ def wrap_mcp_session(session):
         # Skip functools.wraps() entirely to avoid UnionType issues in Python 3.10+
         # Instead, manually copy safe attributes
         try:
-            traced_call_tool.__name__ = getattr(
-                original_call_tool, "__name__", "traced_call_tool"
-            )
+            traced_call_tool.__name__ = getattr(original_call_tool, "__name__", "traced_call_tool")
             traced_call_tool.__doc__ = getattr(original_call_tool, "__doc__", None)
-            traced_call_tool.__module__ = getattr(
-                original_call_tool, "__module__", None
-            )
+            traced_call_tool.__module__ = getattr(original_call_tool, "__module__", None)
         except (TypeError, AttributeError):
             pass
 

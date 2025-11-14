@@ -48,15 +48,11 @@ class TestSpyglassChatOpenAI:
 
     @patch("spyglass_ai.langchain_openai.json.dumps")
     @patch("spyglass_ai.langchain_openai.spyglass_tracer")
-    def test_generate_method_tracing(
-        self, mock_tracer, mock_json_dumps, mock_llm, mock_messages
-    ):
+    def test_generate_method_tracing(self, mock_tracer, mock_json_dumps, mock_llm, mock_messages):
         """Test that _generate method is properly traced"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         # Create a proper mock result structure
@@ -96,9 +92,7 @@ class TestSpyglassChatOpenAI:
         """Test exception handling in _generate method"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         test_exception = Exception("Test error")
@@ -128,9 +122,7 @@ class TestSpyglassChatOpenAI:
         """Test that _agenerate method is properly traced"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         # Create a proper mock result structure
@@ -161,4 +153,3 @@ class TestSpyglassChatOpenAI:
 
         # Verify original method was called
         assert result is mock_result
-

@@ -46,13 +46,9 @@ def spyglass_openai(client_instance):
 
                 # Request parameters
                 if "max_tokens" in kwargs:
-                    span.set_attribute(
-                        "gen_ai.request.max_tokens", kwargs["max_tokens"]
-                    )
+                    span.set_attribute("gen_ai.request.max_tokens", kwargs["max_tokens"])
                 if "temperature" in kwargs:
-                    span.set_attribute(
-                        "gen_ai.request.temperature", kwargs["temperature"]
-                    )
+                    span.set_attribute("gen_ai.request.temperature", kwargs["temperature"])
                 if "top_p" in kwargs:
                     span.set_attribute("gen_ai.request.top_p", kwargs["top_p"])
                 if "frequency_penalty" in kwargs:
@@ -71,22 +67,15 @@ def spyglass_openai(client_instance):
 
                     # Convert messages to the standard format for GenAI semantic conventions
                     formatted_messages = _format_openai_messages(messages)
-                    span.set_attribute(
-                        "gen_ai.input.messages", json.dumps(formatted_messages)
-                    )
+                    span.set_attribute("gen_ai.input.messages", json.dumps(formatted_messages))
 
                 # Tools information
                 if "tools" in kwargs and kwargs["tools"]:
-                    span.set_attribute(
-                        "gen_ai.request.tools.count", len(kwargs["tools"])
-                    )
+                    span.set_attribute("gen_ai.request.tools.count", len(kwargs["tools"]))
                     tool_names = [
-                        tool.get("function", {}).get("name", "unknown")
-                        for tool in kwargs["tools"]
+                        tool.get("function", {}).get("name", "unknown") for tool in kwargs["tools"]
                     ]
-                    span.set_attribute(
-                        "gen_ai.request.tools.names", ",".join(tool_names)
-                    )
+                    span.set_attribute("gen_ai.request.tools.names", ",".join(tool_names))
 
                 # Call the original method
                 result = original_create_method(*args, **kwargs)
@@ -98,35 +87,25 @@ def spyglass_openai(client_instance):
                 # Usage metadata
                 if hasattr(result, "usage") and result.usage:
                     if hasattr(result.usage, "prompt_tokens"):
-                        span.set_attribute(
-                            "gen_ai.usage.input_tokens", result.usage.prompt_tokens
-                        )
+                        span.set_attribute("gen_ai.usage.input_tokens", result.usage.prompt_tokens)
                     if hasattr(result.usage, "completion_tokens"):
                         span.set_attribute(
                             "gen_ai.usage.output_tokens", result.usage.completion_tokens
                         )
                     if hasattr(result.usage, "total_tokens"):
-                        span.set_attribute(
-                            "gen_ai.usage.total_tokens", result.usage.total_tokens
-                        )
+                        span.set_attribute("gen_ai.usage.total_tokens", result.usage.total_tokens)
 
                 # Response content and messages
                 if hasattr(result, "choices") and result.choices:
-                    span.set_attribute(
-                        "gen_ai.response.choices.count", len(result.choices)
-                    )
+                    span.set_attribute("gen_ai.response.choices.count", len(result.choices))
 
                     # Format and record response messages
                     response_messages = _format_openai_response(result.choices)
-                    span.set_attribute(
-                        "gen_ai.output.messages", json.dumps(response_messages)
-                    )
+                    span.set_attribute("gen_ai.output.messages", json.dumps(response_messages))
 
                     # Record finish reasons
                     finish_reasons = [
-                        choice.finish_reason
-                        for choice in result.choices
-                        if choice.finish_reason
+                        choice.finish_reason for choice in result.choices if choice.finish_reason
                     ]
                     if finish_reasons:
                         span.set_attribute(
@@ -208,13 +187,16 @@ def _format_openai_response(choices: List[Any]) -> List[Dict[str, Any]]:
                         "id": tc.id if hasattr(tc, "id") else "",
                         "type": tc.type if hasattr(tc, "type") else "function",
                         "function": {
-                            "name": tc.function.name
-                            if hasattr(tc, "function") and hasattr(tc.function, "name")
-                            else "",
-                            "arguments": tc.function.arguments
-                            if hasattr(tc, "function")
-                            and hasattr(tc.function, "arguments")
-                            else "",
+                            "name": (
+                                tc.function.name
+                                if hasattr(tc, "function") and hasattr(tc.function, "name")
+                                else ""
+                            ),
+                            "arguments": (
+                                tc.function.arguments
+                                if hasattr(tc, "function") and hasattr(tc.function, "arguments")
+                                else ""
+                            ),
                         },
                     }
                     for tc in message.tool_calls

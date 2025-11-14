@@ -20,12 +20,8 @@ class TestSpyglassTrace:
     def test_basic_function_tracing(self, mock_tracer):
         """Test basic function tracing with default name."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         @spyglass_trace()
         def test_function(x, y):
@@ -46,12 +42,8 @@ class TestSpyglassTrace:
     def test_custom_span_name(self, mock_tracer):
         """Test custom span name."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         @spyglass_trace(name="test_function")
         def test_function():
@@ -67,12 +59,8 @@ class TestSpyglassTrace:
     def test_exception_handling(self, mock_tracer):
         """Test that exceptions are properly recorded and re-raised."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         @spyglass_trace()
         def failing_function():
@@ -92,12 +80,8 @@ class TestSpyglassTrace:
     def test_success_status(self, mock_tracer):
         """Test that successful execution sets OK status."""
         mock_span = MagicMock()
-        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(
-            return_value=mock_span
-        )
-        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(
-            return_value=None
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__ = Mock(return_value=mock_span)
+        mock_tracer.start_as_current_span.return_value.__exit__ = Mock(return_value=None)
 
         @spyglass_trace()
         def success_function():
@@ -180,9 +164,7 @@ class TestHelperFunctions:
 
         _capture_return_value(mock_span, "test_result")
 
-        mock_span.set_attribute.assert_called_once_with(
-            "function.return_value", "test_result"
-        )
+        mock_span.set_attribute.assert_called_once_with("function.return_value", "test_result")
 
     def test_capture_return_value_error_handling(self):
         """Test error handling in return value capture."""
@@ -194,9 +176,7 @@ class TestHelperFunctions:
         _capture_return_value(mock_span, "test_result")
 
         # Should handle the error and set error flag
-        mock_span.set_attribute.assert_called_with(
-            "function.return_value.capture_error", True
-        )
+        mock_span.set_attribute.assert_called_with("function.return_value.capture_error", True)
 
 
 class TestSerializeAttributeValue:

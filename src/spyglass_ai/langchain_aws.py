@@ -78,9 +78,7 @@ def _set_bedrock_attributes(span, llm_instance, messages, kwargs):
     span.set_attribute("gen_ai.request.model", llm_instance.model_id)
 
     # AWS Bedrock specific attributes (using gen_ai prefix for consistency)
-    span.set_attribute(
-        "gen_ai.request.aws.region", llm_instance.region_name or "us-east-1"
-    )
+    span.set_attribute("gen_ai.request.aws.region", llm_instance.region_name or "us-east-1")
     span.set_attribute("gen_ai.request.aws.provider", llm_instance.provider)
 
     # Model parameters (GenAI semantic conventions)
@@ -133,17 +131,11 @@ def _set_response_attributes(span, result):
             if isinstance(usage, dict):
                 # Dictionary format - use keys directly
                 if "input_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.input_tokens", usage["input_tokens"]
-                    )
+                    span.set_attribute("gen_ai.usage.input_tokens", usage["input_tokens"])
                 if "output_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.output_tokens", usage["output_tokens"]
-                    )
+                    span.set_attribute("gen_ai.usage.output_tokens", usage["output_tokens"])
                 if "total_tokens" in usage:
-                    span.set_attribute(
-                        "gen_ai.usage.total_tokens", usage["total_tokens"]
-                    )
+                    span.set_attribute("gen_ai.usage.total_tokens", usage["total_tokens"])
 
                 # AWS Bedrock cache tokens (dict format)
                 if "input_token_details" in usage and isinstance(
@@ -198,9 +190,7 @@ def _set_response_attributes(span, result):
 
             # Stop reason from Converse API
             if "stopReason" in metadata:
-                span.set_attribute(
-                    "gen_ai.response.finish_reasons", metadata["stopReason"]
-                )
+                span.set_attribute("gen_ai.response.finish_reasons", metadata["stopReason"])
 
             # Latency metrics (LangChain converts to list format)
             if "metrics" in metadata and "latencyMs" in metadata["metrics"]:
@@ -253,7 +243,9 @@ def _wrap_agenerate_method(llm_instance):
         traced_agenerate.__name__ = getattr(original_agenerate, "__name__", "traced_agenerate")
         traced_agenerate.__doc__ = getattr(original_agenerate, "__doc__", None)
         traced_agenerate.__module__ = getattr(original_agenerate, "__module__", None)
-        traced_agenerate.__qualname__ = getattr(original_agenerate, "__qualname__", "traced_agenerate")
+        traced_agenerate.__qualname__ = getattr(
+            original_agenerate, "__qualname__", "traced_agenerate"
+        )
     except (TypeError, AttributeError):
         pass  # If copying fails, continue without metadata
 
@@ -306,9 +298,7 @@ def _format_langchain_messages(messages: List[Any]) -> List[Dict[str, Any]]:
                     "type": "function",
                     "function": {
                         "name": tc.get("name", ""),
-                        "arguments": json.dumps(tc.get("args", {}))
-                        if tc.get("args")
-                        else "",
+                        "arguments": json.dumps(tc.get("args", {})) if tc.get("args") else "",
                     },
                 }
                 for tc in message.tool_calls

@@ -63,15 +63,11 @@ class TestSpyglassChatBedrockConverse:
 
     @patch("spyglass_ai.langchain_aws.json.dumps")
     @patch("spyglass_ai.langchain_aws.spyglass_tracer")
-    def test_generate_method_tracing(
-        self, mock_tracer, mock_json_dumps, mock_llm, mock_messages
-    ):
+    def test_generate_method_tracing(self, mock_tracer, mock_json_dumps, mock_llm, mock_messages):
         """Test that _generate method is properly traced"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         # Create a proper mock result structure
@@ -112,9 +108,7 @@ class TestSpyglassChatBedrockConverse:
         """Test exception handling in _generate method"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         test_exception = Exception("Test error")
@@ -136,9 +130,7 @@ class TestSpyglassChatBedrockConverse:
         assert "Test error" in str(status_call.description)
 
     @patch("spyglass_ai.langchain_aws.json.dumps")
-    def test_set_bedrock_attributes(
-        self, mock_json_dumps, mock_span, mock_llm, mock_messages
-    ):
+    def test_set_bedrock_attributes(self, mock_json_dumps, mock_span, mock_llm, mock_messages):
         """Test _set_bedrock_attributes function"""
         mock_json_dumps.return_value = '{"messages": "mocked"}'
         kwargs = {
@@ -154,12 +146,8 @@ class TestSpyglassChatBedrockConverse:
         mock_span.set_attribute.assert_any_call(
             "gen_ai.request.model", "anthropic.claude-3-sonnet-20240229-v1:0"
         )
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.request.aws.provider", "anthropic"
-        )
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.request.aws.region", "us-west-2"
-        )
+        mock_span.set_attribute.assert_any_call("gen_ai.request.aws.provider", "anthropic")
+        mock_span.set_attribute.assert_any_call("gen_ai.request.aws.region", "us-west-2")
         mock_span.set_attribute.assert_any_call("gen_ai.request.temperature", 0.1)
         mock_span.set_attribute.assert_any_call("gen_ai.request.max_tokens", 1000)
         mock_span.set_attribute.assert_any_call("gen_ai.request.top_p", 0.9)
@@ -182,9 +170,7 @@ class TestSpyglassChatBedrockConverse:
 
         _set_bedrock_attributes(mock_span, mock_llm, mock_messages, {})
 
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.request.aws.guardrails.enabled", True
-        )
+        mock_span.set_attribute.assert_any_call("gen_ai.request.aws.guardrails.enabled", True)
         mock_span.set_attribute.assert_any_call(
             "gen_ai.request.aws.performance_config.enabled", True
         )
@@ -223,12 +209,8 @@ class TestSpyglassChatBedrockConverse:
         mock_span.set_attribute.assert_any_call("gen_ai.usage.input_tokens", 100)
         mock_span.set_attribute.assert_any_call("gen_ai.usage.output_tokens", 50)
         mock_span.set_attribute.assert_any_call("gen_ai.usage.total_tokens", 150)
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.usage.aws.cache_read_tokens", 10
-        )
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.usage.aws.cache_write_tokens", 5
-        )
+        mock_span.set_attribute.assert_any_call("gen_ai.usage.aws.cache_read_tokens", 10)
+        mock_span.set_attribute.assert_any_call("gen_ai.usage.aws.cache_write_tokens", 5)
 
         # Verify tool call attributes
         mock_span.set_attribute.assert_any_call("gen_ai.response.tools.count", 2)
@@ -237,9 +219,7 @@ class TestSpyglassChatBedrockConverse:
         )
 
         # Verify response metadata
-        mock_span.set_attribute.assert_any_call(
-            "gen_ai.response.finish_reasons", "end_turn"
-        )
+        mock_span.set_attribute.assert_any_call("gen_ai.response.finish_reasons", "end_turn")
         mock_span.set_attribute.assert_any_call("gen_ai.response.aws.latency_ms", 1500)
 
     @patch("spyglass_ai.langchain_aws.json.dumps")
@@ -249,9 +229,7 @@ class TestSpyglassChatBedrockConverse:
         mock_message = Mock()
         mock_message.usage_metadata = None
         mock_message.tool_calls = None
-        mock_message.response_metadata = {
-            "metrics": {"latencyMs": [1500]}  # List format
-        }
+        mock_message.response_metadata = {"metrics": {"latencyMs": [1500]}}  # List format
 
         mock_generation = Mock()
         mock_generation.message = mock_message

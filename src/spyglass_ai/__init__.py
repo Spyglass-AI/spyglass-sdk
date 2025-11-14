@@ -60,9 +60,7 @@ if _LANGCHAIN_AZURE_AVAILABLE:
     __all__.append("spyglass_azure_chatopenai")
 
 if _MCP_TOOLS_AVAILABLE:
-    __all__.extend(
-        ["spyglass_mcp_tools", "spyglass_mcp_tools_async", "wrap_mcp_session"]
-    )
+    __all__.extend(["spyglass_mcp_tools", "spyglass_mcp_tools_async", "wrap_mcp_session"])
 
 if _PYDANTIC_AI_AVAILABLE:
     __all__.append("spyglass_pydantic")

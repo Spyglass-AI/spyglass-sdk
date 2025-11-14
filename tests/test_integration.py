@@ -73,10 +73,10 @@ class TestIntegration:
         # Setup mock spans
         mock_bedrock_span = Mock()
         mock_mcp_span = Mock()
-        mock_bedrock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_bedrock_span
-        mock_mcp_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_mcp_span
+        mock_bedrock_tracer.start_as_current_span.return_value.__enter__.return_value = (
+            mock_bedrock_span
         )
+        mock_mcp_tracer.start_as_current_span.return_value.__enter__.return_value = mock_mcp_span
 
         # Wrap LLM with tracing
         traced_llm = spyglass_chatbedrockconverse(mock_bedrock_llm)
@@ -99,9 +99,7 @@ class TestIntegration:
         """Test integration of MCP session tracing with tool tracing"""
         # Setup mock span
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
 
         # Setup session response
         mock_session_result = Mock()
@@ -117,9 +115,7 @@ class TestIntegration:
         traced_tools = await spyglass_mcp_tools_async(tools=mock_mcp_tools)
 
         # Call session method
-        session_result = await traced_session.call_tool(
-            "get_weather", {"location": "SF"}
-        )
+        session_result = await traced_session.call_tool("get_weather", {"location": "SF"})
 
         # Call tool method
         tool_result = await traced_tools[0].coroutine(location="SF")

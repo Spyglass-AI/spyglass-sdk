@@ -51,15 +51,11 @@ class TestSpyglassAzureChatOpenAI:
 
     @patch("spyglass_ai.langchain_azure.json.dumps")
     @patch("spyglass_ai.langchain_azure.spyglass_tracer")
-    def test_generate_method_tracing(
-        self, mock_tracer, mock_json_dumps, mock_llm, mock_messages
-    ):
+    def test_generate_method_tracing(self, mock_tracer, mock_json_dumps, mock_llm, mock_messages):
         """Test that _generate method is properly traced"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         # Create a proper mock result structure
@@ -91,7 +87,9 @@ class TestSpyglassAzureChatOpenAI:
         # Verify Azure-specific attributes were set
         assert mock_span.set_attribute.called
         # Check that Azure-specific attributes were set
-        set_attribute_calls = {call[0][0]: call[0][1] for call in mock_span.set_attribute.call_args_list}
+        set_attribute_calls = {
+            call[0][0]: call[0][1] for call in mock_span.set_attribute.call_args_list
+        }
         assert "gen_ai.system" in set_attribute_calls
         assert set_attribute_calls["gen_ai.system"] == "azure"
         assert "gen_ai.request.deployment_name" in set_attribute_calls
@@ -109,9 +107,7 @@ class TestSpyglassAzureChatOpenAI:
         """Test exception handling in _generate method"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         test_exception = Exception("Test error")
@@ -141,9 +137,7 @@ class TestSpyglassAzureChatOpenAI:
         """Test that _agenerate method is properly traced"""
         # Setup
         mock_span = Mock()
-        mock_tracer.start_as_current_span.return_value.__enter__.return_value = (
-            mock_span
-        )
+        mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
         mock_json_dumps.return_value = '{"messages": "mocked"}'
 
         # Create a proper mock result structure
@@ -191,4 +185,3 @@ class TestSpyglassAzureChatOpenAI:
         # Should not raise an error
         wrapped_llm = spyglass_azure_chatopenai(llm)
         assert wrapped_llm is llm
-
