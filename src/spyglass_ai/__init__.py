@@ -18,6 +18,14 @@ try:
 except ImportError:
     _LANGCHAIN_OPENAI_AVAILABLE = False
 
+# LangChain Azure OpenAI integrations
+try:
+    from .langchain_azure import spyglass_azure_chatopenai
+
+    _LANGCHAIN_AZURE_AVAILABLE = True
+except ImportError:
+    _LANGCHAIN_AZURE_AVAILABLE = False
+
 # MCP tools integrations
 try:
     from .mcp_tools import (
@@ -47,6 +55,9 @@ if _LANGCHAIN_AWS_AVAILABLE:
 
 if _LANGCHAIN_OPENAI_AVAILABLE:
     __all__.append("spyglass_chatopenai")
+
+if _LANGCHAIN_AZURE_AVAILABLE:
+    __all__.append("spyglass_azure_chatopenai")
 
 if _MCP_TOOLS_AVAILABLE:
     __all__.extend(
