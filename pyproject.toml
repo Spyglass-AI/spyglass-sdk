@@ -1,6 +1,6 @@
 [project]
 name = "spyglass-ai"
-version = "0.1.7"
+version = "0.1.8"
 description = "A client library for shipping telemetry to the Spyglass AI platform"
 readme = "README.md"
 authors = [
