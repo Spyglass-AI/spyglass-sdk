@@ -1,12 +1,13 @@
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch
 from opentelemetry.trace import Status, StatusCode
 
 from spyglass_ai.langchain_aws import (
-    spyglass_chatbedrockconverse,
+    _format_langchain_messages,
     _set_bedrock_attributes,
     _set_response_attributes,
-    _format_langchain_messages,
+    spyglass_chatbedrockconverse,
 )
 
 

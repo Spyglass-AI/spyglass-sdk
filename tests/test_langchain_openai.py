@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 from opentelemetry.trace import Status, StatusCode
 
 from spyglass_ai.langchain_openai import spyglass_chatopenai

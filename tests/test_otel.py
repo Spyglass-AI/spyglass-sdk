@@ -149,10 +149,10 @@ def test_exception_hierarchy():
 def test_configure_programmatic_config(mock_otlp_exporter):
     """Test that configure_spyglass() allows programmatic configuration."""
     from spyglass_ai.otel import (
-        configure_spyglass,
+        _config,
         _create_exporter,
         _create_resource,
-        _config,
+        configure_spyglass,
     )
 
     # Reset any existing config by clearing the module-level dict
@@ -192,10 +192,10 @@ def test_configure_programmatic_config(mock_otlp_exporter):
 def test_configure_takes_precedence_over_env_vars(mock_otlp_exporter):
     """Test that programmatic config takes precedence over environment variables."""
     from spyglass_ai.otel import (
-        configure_spyglass,
+        _config,
         _create_exporter,
         _create_resource,
-        _config,
+        configure_spyglass,
     )
 
     # Reset any existing config by clearing the module-level dict
@@ -233,10 +233,10 @@ def test_configure_takes_precedence_over_env_vars(mock_otlp_exporter):
 def test_env_vars_fallback_when_not_configured(mock_otlp_exporter):
     """Test that environment variables are used when programmatic config is not set."""
     from spyglass_ai.otel import (
-        configure_spyglass,
+        _config,
         _create_exporter,
         _create_resource,
-        _config,
+        configure_spyglass,
     )
 
     # Reset any existing config by clearing the module-level dict
@@ -263,7 +263,7 @@ def test_env_vars_fallback_when_not_configured(mock_otlp_exporter):
 @patch.dict(os.environ, {}, clear=True)
 def test_configure_resets_tracer():
     """Test that configure_spyglass() resets the tracer so it reinitializes with new config."""
-    from spyglass_ai.otel import configure_spyglass, get_spyglass_tracer, _config
+    from spyglass_ai.otel import _config, configure_spyglass, get_spyglass_tracer
 
     # Reset any existing config by clearing the module-level dict
     _config["api_key"] = None

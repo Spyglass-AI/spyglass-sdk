@@ -1,12 +1,13 @@
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
 from opentelemetry.trace import Status, StatusCode
 
 from spyglass_ai.mcp_tools import (
-    spyglass_mcp_tools,
-    spyglass_mcp_tools_async,
     _set_tool_attributes,
     _set_tool_result_attributes,
+    spyglass_mcp_tools,
+    spyglass_mcp_tools_async,
     wrap_mcp_session,
 )
 
